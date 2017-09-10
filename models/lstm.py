@@ -42,9 +42,9 @@ def lstm(corpus):
         name='right_embedding'
     )(right_input)
 
-    left_lstm = Bidirectional(LSTM(100, return_sequences=False, name='left_lstm'))(left)
-    entity_lstm = Bidirectional(LSTM(100, return_sequences=False, name='entity_lstm'))(entity)
-    right_lstm = Bidirectional(LSTM(100, return_sequences=False, name='right_lstm'))(right)
+    left_lstm = Bidirectional(LSTM(100, return_sequences=False, recurrent_dropout=0.25, dropout=0.25, name='left_lstm'))(left)
+    entity_lstm = Bidirectional(LSTM(100, return_sequences=False, recurrent_dropout=0.25, dropout=0.25, name='entity_lstm'))(entity)
+    right_lstm = Bidirectional(LSTM(100, return_sequences=False, recurrent_dropout=0.25, dropout=0.25, name='right_lstm'))(right)
 
     merge_layer = concatenate([left_lstm, entity_lstm, right_lstm])
     hidden_1 = Dense(200, activation='relu', name='hidden_1')(merge_layer)
