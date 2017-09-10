@@ -42,16 +42,17 @@ def lstm(corpus):
         name='right_embedding'
     )(right_input)
 
-    left_lstm = LSTM(100, return_sequences=False, name='left_lstm')(left)
-    entity_lstm = LSTM(100, return_sequences=False, name='entity_lstm')(entity)
-    right_lstm = LSTM(100, return_sequences=False, name='right_lstm')(right)
+    left_lstm = Bidirectional(LSTM(100, return_sequences=False, name='left_lstm'))(left)
+    entity_lstm = Bidirectional(LSTM(100, return_sequences=False, name='entity_lstm'))(entity)
+    right_lstm = Bidirectional(LSTM(100, return_sequences=False, name='right_lstm'))(right)
 
     merge_layer = concatenate([left_lstm, entity_lstm, right_lstm])
-    hidden = Dense(100, activation='tanh', name='hidden_1')(merge_layer)
-    output = Dense(corpus.labelDim, activation='sigmoid', name='output')(hidden)
+    hidden_1 = Dense(200, activation='relu', name='hidden_1')(merge_layer)
+    hidden_2 = Dense(100, activation='tanh', name='hidden_2')(hidden_1)
+    output = Dense(corpus.labelDim, activation='sigmoid', name='output')(hidden_2)
 
     model = Model(inputs=[left_input, entity_input, right_input], outputs=output)
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     model.summary()
 
     return model

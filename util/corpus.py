@@ -110,6 +110,23 @@ class MyCorpus(CorpusEN):
         return labelDict
 
 
+    @staticmethod
+    def topK(y, topK=2):
+        argList = y.argsort()[:, -topK:]
+        batch_size = y.shape[0]
+        dim = y.shape[1]
+        predictions = np.zeros((batch_size, dim))
+
+        for idx, args in enumerate(argList):
+            for arg in args:
+                predictions[idx, arg] = 1
+
+        return predictions
 
 
+    @staticmethod
+    def threshold(y, threshold=0.5):
+        ufunc = lambda prob: int(prob > threshold)
+        opt = np.vectorize(ufunc)
+        return opt(y)
 

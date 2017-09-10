@@ -1,3 +1,5 @@
+import os
+import sys
 import logging
 from keras.models import load_model
 
@@ -20,11 +22,22 @@ corpus = MyCorpus(filePathList=[trainFilePath, testFilePath])
 X_train, y_train = corpus.loadFile(filePath=trainFilePath)
 X_test, y_test = corpus.loadFile(filePath=testFilePath)
 
-model = lstm(corpus)
-model.fit(X_train, y_train, epochs=5, batch_size=32, shuffle=True)
-model.save('model.h5')
-# model = load_model('model.h5')
-y_predict = model.predict(X_test)
+
+modelName = 'bilstm-twoHidden.h5'
+
+if len(sys.argv) > 1 and sys.argv[1] == 'eval':
+    model = load_model(modelName)
+else:
+    if os.path.exists(modelName):
+        model = load_model(modelName)
+    else:
+        model = lstm(corpus)
+    model.fit(X_train, y_train, epochs=5, batch_size=128, validation_split=0.1, shuffle=True)
+    model.save(modelName)
+
+y_prob = model.predict(X_test)
+
+y_predict = corpus.topK(y_prob, topK=2)
 
 predictions = corpus.oneHotDecode(y_predict)
 ground_truth = corpus.oneHotDecode(y_test)
