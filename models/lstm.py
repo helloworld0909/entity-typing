@@ -42,13 +42,17 @@ def lstm(corpus):
         name='right_embedding'
     )(right_input)
 
+    # TODO: Character representation, 人工特征
+
     left_lstm = Bidirectional(LSTM(100, return_sequences=False, recurrent_dropout=0.25, dropout=0.25, name='left_lstm'))(left)
     entity_lstm = Bidirectional(LSTM(100, return_sequences=False, recurrent_dropout=0.25, dropout=0.25, name='entity_lstm'))(entity)
     right_lstm = Bidirectional(LSTM(100, return_sequences=False, recurrent_dropout=0.25, dropout=0.25, name='right_lstm'))(right)
 
+    # TODO: 模型：分开的模型和合并的sentence的模型（多加一位0/1指明mention的位置）
+
     merge_layer = concatenate([left_lstm, entity_lstm, right_lstm])
     hidden_1 = Dense(200, activation='relu', name='hidden_1')(merge_layer)
-    hidden_2 = Dense(100, activation='tanh', name='hidden_2')(hidden_1)
+    hidden_2 = Dense(100, activation='relu', name='hidden_2')(hidden_1)
     output = Dense(corpus.labelDim, activation='sigmoid', name='output')(hidden_2)
 
     model = Model(inputs=[left_input, entity_input, right_input], outputs=output)

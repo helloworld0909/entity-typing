@@ -130,3 +130,26 @@ class MyCorpus(CorpusEN):
         opt = np.vectorize(ufunc)
         return opt(y)
 
+
+    @staticmethod
+    def hybrid(y, threshold=0.5):
+        topArgList = y.argsort()[:, -1]
+        batch_size = y.shape[0]
+        dim = y.shape[1]
+        predictions = np.zeros((batch_size, dim))
+
+        for idx, arg in enumerate(topArgList):
+            predictions[idx, arg] = 1
+
+        for sentIdx, probVec in enumerate(y):
+            for idx, prob in enumerate(probVec):
+                if prob > threshold:
+                    predictions[sentIdx, idx] = 1
+
+        return predictions
+
+
+
+
+
+    # TODO: AFET训练集去噪
