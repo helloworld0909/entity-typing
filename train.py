@@ -34,13 +34,13 @@ else:
     else:
         model = lstm(corpus)
     metricHistory = MetricHistory(X_test, y_test)
-    model.fit(X_train, y_train, epochs=5, batch_size=128, validation_split=0.1, shuffle=True, callbacks=[metricHistory])
+    model.fit(X_train, y_train, epochs=20, batch_size=128, validation_split=0.1, shuffle=True, callbacks=[metricHistory])
     model.save(modelName)
     logging.info(str(metricHistory.history))
 
 y_prob = model.predict(X_test)
 
-y_predict = corpus.topK(y_prob, topK=2)
+y_predict = corpus.hybrid(y_prob, threshold=0.5)
 
 predictions = corpus.oneHotDecode(y_predict)
 ground_truth = corpus.oneHotDecode(y_test)
