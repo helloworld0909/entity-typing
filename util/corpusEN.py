@@ -1,4 +1,5 @@
 import logging
+import math
 from collections import defaultdict
 import numpy as np
 from keras.preprocessing.sequence import pad_sequences
@@ -15,6 +16,7 @@ class CorpusEN(AbstractCorpus):
         self.maxTokenLength = 0
         self.maxSentenceLength = 0
         self.tokenIdx2charVector = []
+        self.charEmbedding = []
 
     def initTokenIdx2charVector(self, maxTokenLength):
         tokenIdx2charVector = []
@@ -27,6 +29,14 @@ class CorpusEN(AbstractCorpus):
 
         self.tokenIdx2charVector = np.asarray(pad_sequences(tokenIdx2charVector, maxlen=maxTokenLength))
         logging.debug('tokenIdx2charVector[2]: ' + str(self.tokenIdx2charVector[2]))
+
+    def initCharEmbedding(self, charEmbeddingDim):
+        for _ in self.char2idx:
+            limit = math.sqrt(3.0 / charEmbeddingDim)
+            vector = np.random.uniform(-limit, limit, charEmbeddingDim)
+            self.charEmbedding.append(vector)
+        logging.info('charEmbedding: ' + str(charEmbeddingDim))
+
 
     def initWordEmbedding(self, filePath, dim=100):
         """

@@ -14,10 +14,10 @@ class MyCorpus(CorpusEN):
     def __init__(self, filePathList):
         super(MyCorpus, self).__init__()
         self.initMappings(filePathList)
-        # self.initMaxTokenLength()
-        # self.initTokenIdx2charVector(self.maxTokenLength)
+        self.initMaxTokenLength()
+        self.initTokenIdx2charVector(self.maxTokenLength)
         self.initWordEmbedding(self.embeddingFilePath, dim=100)
-
+        self.initCharEmbedding(30)
 
 
     def initMappings(self, filePathList):
