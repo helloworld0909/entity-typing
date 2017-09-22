@@ -7,6 +7,7 @@ from keras.models import Model
 left_length = 130
 entity_length = 6
 right_length = 130
+total_length = 260
 charEmbeddingDim = 30
 
 def lstm(corpus):
@@ -120,6 +121,55 @@ def lstm(corpus):
     output = Dense(corpus.labelDim, activation='sigmoid', name='output')(hidden_2)
 
     model = Model(inputs=[left_input, entity_input, right_input], outputs=output)
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    model.summary()
+
+    return model
+
+def lstmSingle(corpus):
+    global total_length
+
+    token_input = Input((total_length,), name='token_input')
+    tag_input = Input((total_length, 1), name='tag_input')
+
+    word_embedding = Embedding(
+        input_dim=corpus.vocabSize,
+        output_dim=100,
+        input_length=total_length,
+        weights=[corpus.wordEmbedding],
+        trainable=False,
+        name='word_embedding'
+    )(token_input)
+
+    char_input = Embedding(
+        input_dim=corpus.tokenIdx2charVector.shape[0],
+        output_dim=corpus.tokenIdx2charVector.shape[1],
+        input_length=total_length,
+        weights=[corpus.tokenIdx2charVector],
+        trainable=False,
+        name='char_input'
+    )(token_input)
+
+    char_embedding = TimeDistributed(Embedding(
+            input_dim=len(corpus.char2idx),
+            output_dim=charEmbeddingDim,
+            weights=[corpus.charEmbedding],
+            trainable=True,
+        ),
+        name='char_embedding'
+    )(char_input)
+
+    char = TimeDistributed(LSTM(30, return_sequences=False), name='char_LSTM')(char_embedding)
+
+    merge_layer = concatenate([word_embedding, tag_input, char])
+
+    bilstm = Bidirectional(LSTM(100, return_sequences=False, recurrent_dropout=0.25, dropout=0.25, name='BiLSTM'))(merge_layer)
+
+    hidden = Dense(100, activation='relu', name='hidden_2')(bilstm)
+
+    output = Dense(corpus.labelDim, activation='sigmoid', name='output')(hidden)
+
+    model = Model(inputs=[token_input, tag_input], outputs=output)
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     model.summary()
 
