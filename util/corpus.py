@@ -13,15 +13,16 @@ class MyCorpus(CorpusEN):
 
     def __init__(self, filePathList):
         super(MyCorpus, self).__init__()
-        self.initMappings(filePathList)
+        self.initMappings(filePathList, cutoff=10)
         self.initMaxTokenLength()
         self.initTokenIdx2charVector(self.maxTokenLength)
         self.initWordEmbedding(self.embeddingFilePath, dim=100)
         self.initCharEmbedding(30)
 
 
-    def initMappings(self, filePathList):
+    def initMappings(self, filePathList, cutoff=10):
 
+        tokenFreq = preprocess.tokenFrequency(filePathList)
         for filePath in filePathList:
             with open(filePath, 'r', encoding='utf-8') as input_file:
                 for line in input_file:
@@ -29,7 +30,7 @@ class MyCorpus(CorpusEN):
                     tokens = sent['tokens']
 
                     for token in tokens:
-                        if token not in self.token2idx:
+                        if token not in self.token2idx and tokenFreq.get(token, 0) >= cutoff:
                             self.token2idx[token] = len(self.token2idx)
 
                     for mention in sent['mentions']:

@@ -1,4 +1,5 @@
 from collections import defaultdict
+import json
 import numpy as np
 
 
@@ -10,6 +11,16 @@ def getChar2idx():
     charSet = getCharSet()
     return {v:k for k,v in enumerate(charSet)}
 
+def tokenFrequency(filePathList):
+    tokenFreq = defaultdict(int)
+
+    for filePath in filePathList:
+        with open(filePath, 'r', encoding='utf-8') as inputFile:
+            for line in inputFile:
+                tokens = json.loads(line)['tokens']
+                for token in tokens:
+                    tokenFreq[token] += 1
+    return tokenFreq
 
 def loadWordEmbedding(filePath, dim=100):
     word2vector = {'PADDING': np.zeros(dim), 'UNKNOWN': np.random.uniform(-0.25, 0.25, 100)}
