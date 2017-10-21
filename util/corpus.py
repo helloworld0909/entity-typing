@@ -4,6 +4,7 @@ import numpy as np
 from collections import defaultdict
 from keras.preprocessing.sequence import pad_sequences
 from util.corpusEN import CorpusEN
+from util.corpusCN import CorpusCN
 from util import preprocess
 
 
@@ -185,8 +186,95 @@ class MyCorpus(CorpusEN):
 
         return predictions
 
-
-
-
-
     # TODO: AFET训练集去噪
+
+
+class MyCorpusCN(CorpusCN):
+
+    def __init__(self, filePathList):
+        super(MyCorpusCN, self).__init__()
+        self.initMappings(filePathList, cutoff=10)
+
+    def initMappings(self, filePathList, cutoff=10):
+        tokenFreq = preprocess.tokenFrequency(filePathList)
+        for filePath in filePathList:
+            with open(filePath, 'r', encoding='utf-8') as input_file:
+                for line in input_file:
+                    sent = json.loads(line)
+                    tokens = sent['tokens']
+
+                    for token in tokens:
+                        if token not in self.token2idx and tokenFreq.get(token, 0) >= cutoff:
+                            self.token2idx[token] = len(self.token2idx)
+
+                    for mention in sent['mentions']:
+                        labels = mention['labels']
+                        for label in labels:
+                            if label not in self.label2idx:
+                                self.label2idx[label] = len(self.label2idx)
+        self.vocabSize = len(self.token2idx)
+        self.labelDim = len(self.label2idx)
+        logging.info('Vocabulary size: ' + str(self.vocabSize))
+        logging.info('Label dim: ' + str(self.labelDim))
+
+    def loadFile(self, filePath):
+        X_entity = []
+        X_left = []
+        X_right = []
+        y = []
+
+        labelDim = len(self.label2idx)
+
+        with open(filePath, 'r', encoding='utf-8') as input_file:
+            for line in input_file:
+                body = json.loads(line)
+                sentence = body['tokens']
+                idxSentence = list(map(lambda token: self.token2idx.get(token, 1), sentence))
+
+                for mention in body['mentions']:
+                    start = mention['start']
+                    end = mention['end']
+                    entity = idxSentence[start:end]
+                    leftContext = idxSentence[:start]
+                    rightContext = idxSentence[end:]
+                    idxLabels = list(map(lambda label: self.label2idx[label], mention['labels']))
+                    if not idxLabels:
+                        continue
+                    oneHotVector = self.oneHotEncode(idxLabels, labelDim)
+
+                    X_entity.append(entity)
+                    X_left.append(leftContext)
+                    X_right.append(rightContext)
+                    y.append(oneHotVector)
+
+        logging.debug(X_entity[0])
+        logging.debug(X_left[0])
+        logging.debug(X_right[0])
+
+        # TODO: dynamically select maxlen
+        X_entity = pad_sequences(X_entity, maxlen=5)
+        X_left = pad_sequences(X_left, maxlen=20, truncating='pre')
+        X_right = pad_sequences(X_right, maxlen=20, truncating='post')
+        y = np.asarray(y)
+
+        return [X_left, X_entity, X_right], y
+
+    @staticmethod
+    def oneHotEncode(idxLabels, labelDim):
+        return MyCorpus.oneHotEncode(idxLabels, labelDim)
+
+    @staticmethod
+    def oneHotDecode(y):
+        return MyCorpus.oneHotDecode(y)
+
+    @staticmethod
+    def topK(y, topK=2):
+        return MyCorpus.topK(y, topK)
+
+    @staticmethod
+    def threshold(y, threshold=0.5):
+        return MyCorpus.threshold(y, threshold)
+
+    @staticmethod
+    def hybrid(y, threshold=0.5):
+        return MyCorpus.hybrid(y, threshold)
