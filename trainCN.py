@@ -16,13 +16,13 @@ logging.basicConfig(
 )
 
 dataSetName = 'baike'
-trainFilePath = 'data/{}/data.json'.format(dataSetName)
-# testFilePath = 'data/{}/test.json'.format(dataSetName)
+trainFilePath = 'data/{}/train.json'.format(dataSetName)
+testFilePath = 'data/{}/test.json'.format(dataSetName)
 
 corpus = MyCorpusCN(filePathList=[trainFilePath])
 X_train, y_train = corpus.loadFile(filePath=trainFilePath)
-# X_test, y_test = corpus.loadFile(filePath=testFilePath)
+X_test, y_test = corpus.loadFile(filePath=testFilePath)
 
 model = lstmCN(corpus)
-# metricHistory = MetricHistory(X_test, y_test)
-model.fit(X_train, y_train, epochs=20, batch_size=128, validation_split=0.1, shuffle=True)
+metricHistory = MetricHistory(X_test, y_test)
+model.fit(X_train, y_train, epochs=20, batch_size=128, validation_split=0.1, shuffle=True, callbacks=[metricHistory])

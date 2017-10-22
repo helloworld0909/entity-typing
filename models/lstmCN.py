@@ -4,9 +4,9 @@ from keras.layers import *
 from keras.optimizers import *
 from keras.models import Model
 
-left_length = 20
-entity_length = 5
-right_length = 20
+left_length = 25
+entity_length = 12
+right_length = 70
 
 
 def lstmCN(corpus):
@@ -20,7 +20,8 @@ def lstmCN(corpus):
         input_dim=corpus.vocabSize,
         output_dim=100,
         input_length=left_length,
-        trainable=False,
+        weights=[corpus.wordEmbedding],
+        trainable=True,
         name='left_embedding'
     )(left_input)
 
@@ -28,7 +29,8 @@ def lstmCN(corpus):
         input_dim=corpus.vocabSize,
         output_dim=100,
         input_length=entity_length,
-        trainable=False,
+        weights=[corpus.wordEmbedding],
+        trainable=True,
         name='entity_embedding'
     )(entity_input)
 
@@ -36,7 +38,8 @@ def lstmCN(corpus):
         input_dim=corpus.vocabSize,
         output_dim=100,
         input_length=right_length,
-        trainable=False,
+        weights=[corpus.wordEmbedding],
+        trainable=True,
         name='right_embedding'
     )(right_input)
 

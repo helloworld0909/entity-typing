@@ -13,7 +13,7 @@ logging.basicConfig(
 
 filepath = '../data/baike/'
 
-entity2types = toJsonUtil.getEntityTypes(filepath + 'zh_entity_types_common.txt')
+entity2types = toJsonUtil.getEntityTypes(filepath + 'zh_entity_types.txt')
 
 with open(filepath + 'baike_desc.txt', 'r', encoding='utf-8') as inputFile:
 

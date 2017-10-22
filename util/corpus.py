@@ -194,6 +194,7 @@ class MyCorpusCN(CorpusCN):
     def __init__(self, filePathList):
         super(MyCorpusCN, self).__init__()
         self.initMappings(filePathList, cutoff=10)
+        self.initWordEmbedding(dim=100)
 
     def initMappings(self, filePathList, cutoff=10):
         tokenFreq = preprocess.tokenFrequency(filePathList)
@@ -218,6 +219,8 @@ class MyCorpusCN(CorpusCN):
         logging.info('Label dim: ' + str(self.labelDim))
 
     def loadFile(self, filePath):
+        from models.lstmCN import left_length, entity_length, right_length
+
         X_entity = []
         X_left = []
         X_right = []
@@ -252,9 +255,9 @@ class MyCorpusCN(CorpusCN):
         logging.debug(X_right[0])
 
         # TODO: dynamically select maxlen
-        X_entity = pad_sequences(X_entity, maxlen=5)
-        X_left = pad_sequences(X_left, maxlen=20, truncating='pre')
-        X_right = pad_sequences(X_right, maxlen=20, truncating='post')
+        X_entity = pad_sequences(X_entity, maxlen=entity_length)
+        X_left = pad_sequences(X_left, maxlen=left_length, truncating='pre')
+        X_right = pad_sequences(X_right, maxlen=right_length, truncating='post')
         y = np.asarray(y)
 
         return [X_left, X_entity, X_right], y
