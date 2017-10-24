@@ -142,6 +142,7 @@ class MyCorpus(CorpusEN):
         labelDict = defaultdict(set)
         for oneHotVector in y:
             sentIdx = len(labelDict)
+            labelDict[sentIdx] = set()
             for idx, value in enumerate(oneHotVector):
                 if value != 0:
                     labelDict[sentIdx].add(idx)

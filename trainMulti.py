@@ -17,7 +17,7 @@ logging.basicConfig(
     datefmt='%a, %d %b %Y %H:%M:%S',
 )
 
-dataSetName = 'BBN'
+dataSetName = 'OntoNotes'
 trainFilePath = 'data/{}/train.json'.format(dataSetName)
 testFilePath = 'data/{}/test.json'.format(dataSetName)
 
