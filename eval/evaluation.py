@@ -25,7 +25,8 @@ def evaluate(prediction, ground_truth):
         if p == g:
             same += 1
         same_count = len(p&g)
-        macro_precision += float(same_count)/float(len(p))
+        if len(p) != 0:
+            macro_precision += float(same_count)/float(len(p))
         macro_recall += float(same_count)/float(len(g))
         micro_n += same_count
         micro_precision += len(p)
