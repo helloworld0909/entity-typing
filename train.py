@@ -15,7 +15,7 @@ logging.basicConfig(
     datefmt='%a, %d %b %Y %H:%M:%S',
 )
 
-dataSetName = 'BBN'
+dataSetName = 'Wiki'
 trainFilePath = 'data/{}/train.json'.format(dataSetName)
 testFilePath = 'data/{}/test.json'.format(dataSetName)
 
@@ -24,7 +24,7 @@ X_train, y_train = corpus.loadFile(filePath=trainFilePath)
 X_test, y_test = corpus.loadFile(filePath=testFilePath)
 
 
-modelName = 'bilstm-twoHidden2-dropout.h5'
+modelName = dataSetName + '_bilstm.h5'
 
 if len(sys.argv) > 1 and sys.argv[1] == 'eval':
     model = load_model(modelName)
