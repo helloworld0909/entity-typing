@@ -6,9 +6,9 @@ from keras.models import load_model
 
 from eval.evaluation import evaluate
 from models.lstm import lstm, lstmSingle
-from models.hnm import hnm
+from models.hnm import hnm, hnm_origin
 from util.corpus import MyCorpus
-from util.callback import MetricHistory
+from util.callback import MetricHistory, MetricHistorySoftmax
 
 # :: Logging level ::
 logging.basicConfig(
@@ -17,7 +17,7 @@ logging.basicConfig(
     datefmt='%a, %d %b %Y %H:%M:%S',
 )
 
-dataSetName = 'OntoNotes'
+dataSetName = 'Wiki'
 trainFilePath = 'data/{}/train.json'.format(dataSetName)
 testFilePath = 'data/{}/test.json'.format(dataSetName)
 
@@ -70,7 +70,16 @@ def trainHNM():
     with open('HNM.pkl', 'wb') as outputFile:
         pickle.dump(predictions, outputFile, pickle.HIGHEST_PROTOCOL)
 
+def trainHNMOrigin():
+    global trainFilePath, testFilePath, corpus
+
+    X_train, y_train = corpus.loadFile(filePath=trainFilePath)
+    X_test, y_test = corpus.loadFile(filePath=testFilePath)
+    model = hnm_origin(corpus)
+    metricHistory = MetricHistorySoftmax(X_test, y_test)
+    model.fit(X_train, y_train, epochs=10, batch_size=128, validation_split=0.1, shuffle=True, callbacks=[metricHistory])
+
 if __name__ == '__main__':
-    trainLSTM()
-    trainLSTMSingle()
-    trainHNM()
+    # trainLSTM()
+    # trainLSTMSingle()
+    trainHNMOrigin()
