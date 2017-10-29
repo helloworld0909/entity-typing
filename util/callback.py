@@ -22,12 +22,34 @@ class MetricHistory(keras.callbacks.Callback):
         y_prob = self.model.predict(self.X_test)
         np.save(self.saveDir + 'epoch{:0>2}.npy'.format(epoch), y_prob)
 
-        y_predict = MyCorpus.hybrid(y_prob, threshold=0.5)
+        scores = []
+        for threshold in np.arange(0.3, 0.6, 0.1):
+            y_predict = MyCorpus.threshold(y_prob, threshold=threshold)
+
+            predictions = MyCorpus.oneHotDecode(y_predict)
+            ground_truth = MyCorpus.oneHotDecode(self.y_test)
+            metrics = evaluate(predictions, ground_truth)
+            scores.append(metrics)
+        maxScore = max(scores, key=lambda kv: sum([kv[0], kv[3], kv[6]]))
+        logging.info('acc, ma_f1, mi_f1: {}'.format(maxScore[0], maxScore[3], maxScore[6]))
+        with open(self.saveDir + 'metric.txt', 'a') as metricFile:
+            metricFile.write('\t'.join(map(str, maxScore)) + '\n')
+        self.history.append(maxScore)
+
+class MetricHistorySoftmax(MetricHistory):
+    def __init__(self, X_test, y_test):
+        super(MetricHistorySoftmax, self).__init__(X_test, y_test)
+
+    def on_epoch_end(self, epoch, logs={}):
+        y_prob = self.model.predict(self.X_test)
+        np.save(self.saveDir + 'epoch{:0>2}.npy'.format(epoch), y_prob)
+
+        y_predict = MyCorpus.topK(y_prob, topK=1)
 
         predictions = MyCorpus.oneHotDecode(y_predict)
         ground_truth = MyCorpus.oneHotDecode(self.y_test)
         metrics = evaluate(predictions, ground_truth)
-        print('acc, ma_f1, mi_f1: {}'.format(metrics[0], metrics[3], metrics[6]))
+        logging.info('acc, ma_f1, mi_f1: {}'.format(metrics[0], metrics[3], metrics[6]))
         with open(self.saveDir + 'metric.txt', 'a') as metricFile:
             metricFile.write('\t'.join(map(str, metrics)) + '\n')
         self.history.append(metrics)
