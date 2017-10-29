@@ -1,6 +1,7 @@
 import logging
 import json
 import numpy as np
+import pickle
 from collections import defaultdict
 from keras.preprocessing.sequence import pad_sequences
 from util.corpusEN import CorpusEN
@@ -251,9 +252,52 @@ class MyCorpusCN(CorpusCN):
                     X_right.append(rightContext)
                     y.append(oneHotVector)
 
-        logging.debug(X_entity[0])
-        logging.debug(X_left[0])
-        logging.debug(X_right[0])
+        # TODO: dynamically select maxlen
+        X_entity = pad_sequences(X_entity, maxlen=entity_length)
+        X_left = pad_sequences(X_left, maxlen=left_length, truncating='pre')
+        X_right = pad_sequences(X_right, maxlen=right_length, truncating='post')
+        y = np.asarray(y)
+
+        return [X_left, X_entity, X_right], y
+
+
+    def loadFileAdditional(self, filePath):
+        from models.lstmCN import left_length, entity_length, right_length
+
+        X_entity = []
+        X_left = []
+        X_right = []
+        y = []
+
+        labelDim = len(self.label2idx)
+        idx2entity = {}
+
+        with open(filePath, 'r', encoding='utf-8') as input_file:
+            for line in input_file:
+                body = json.loads(line)
+                sentence = body['tokens']
+                idxSentence = list(map(lambda token: self.token2idx.get(token, 1), sentence))
+
+                e = body['entity']
+
+                for mention in body['mentions']:
+                    start = mention['start']
+                    end = mention['end']
+                    entity = idxSentence[start:end]
+                    leftContext = idxSentence[:start]
+                    rightContext = idxSentence[end:]
+                    idxLabels = list(map(lambda label: self.label2idx[label], mention['labels']))
+                    oneHotVector = self.oneHotEncode(idxLabels, labelDim)
+
+                    idx2entity[len(idx2entity)] = e
+
+                    X_entity.append(entity)
+                    X_left.append(leftContext)
+                    X_right.append(rightContext)
+                    y.append(oneHotVector)
+
+        with open('idx2entity.pkl', 'wb') as pklFile:
+            pickle.dump(idx2entity, pklFile)
 
         # TODO: dynamically select maxlen
         X_entity = pad_sequences(X_entity, maxlen=entity_length)
