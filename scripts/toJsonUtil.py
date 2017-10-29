@@ -17,9 +17,13 @@ def parseDBPediaUrl(url):
         return url
 
 def parseEntity(e):
-    match = re.match(r'^(.*)（.*）$', e)
+    match = re.match(r'^(.+)（.+）$', e)
     if match:
-        return match.group(1)
+        mention = match.group(1)
+        if mention:
+            return mention
+        else:
+            return e
     else:
         return e
 
