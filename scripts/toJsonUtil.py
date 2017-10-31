@@ -45,7 +45,7 @@ def segmentSent(paragraph):
     sents = paragraph.split('|||')
     res = []
     for sent in sents:
-        res.extend(re.findall(r"[^；。]+[；。]", sent))
+        res.extend(re.findall(r"[^；。！？]+[；。！？]", sent))
     return [sent for sent in res if sent]
 
 def segmentWord(sent):

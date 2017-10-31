@@ -17,7 +17,7 @@ logging.basicConfig(
     datefmt='%a, %d %b %Y %H:%M:%S',
 )
 
-dataSetName = 'Wiki'
+dataSetName = 'baike'
 trainFilePath = 'data/{}/train.json'.format(dataSetName)
 testFilePath = 'data/{}/test.json'.format(dataSetName)
 
@@ -36,7 +36,7 @@ def trainLSTM():
     y_predict = MyCorpus.hybrid(y_prob, threshold=0.5)
 
     predictions = MyCorpus.oneHotDecode(y_predict)
-    with open('LSTM.pkl', 'wb') as outputFile:
+    with open(metricHistory.saveDir + 'LSTM.pkl', 'wb') as outputFile:
         pickle.dump(predictions, outputFile, pickle.HIGHEST_PROTOCOL)
 
 def trainLSTMSingle():
@@ -51,7 +51,7 @@ def trainLSTMSingle():
     y_predict = MyCorpus.hybrid(y_prob, threshold=0.5)
 
     predictions = MyCorpus.oneHotDecode(y_predict)
-    with open('LSTMSingle.pkl', 'wb') as outputFile:
+    with open(metricHistory.saveDir + 'LSTMSingle.pkl', 'wb') as outputFile:
         pickle.dump(predictions, outputFile, pickle.HIGHEST_PROTOCOL)
 
 def trainHNM():
@@ -67,7 +67,7 @@ def trainHNM():
     y_predict = MyCorpus.hybrid(y_prob, threshold=0.5)
 
     predictions = MyCorpus.oneHotDecode(y_predict)
-    with open('HNM.pkl', 'wb') as outputFile:
+    with open(metricHistory.saveDir + 'HNM.pkl', 'wb') as outputFile:
         pickle.dump(predictions, outputFile, pickle.HIGHEST_PROTOCOL)
 
 def trainHNMOrigin():
@@ -80,6 +80,6 @@ def trainHNMOrigin():
     model.fit(X_train, y_train, epochs=10, batch_size=128, validation_split=0.1, shuffle=True, callbacks=[metricHistory])
 
 if __name__ == '__main__':
-    # trainLSTM()
-    # trainLSTMSingle()
-    trainHNMOrigin()
+    trainLSTM()
+    trainLSTMSingle()
+    trainHNM()
