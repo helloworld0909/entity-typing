@@ -23,6 +23,15 @@ testFilePath = 'data/{}/test.json'.format(dataSetName)
 
 corpus = MyCorpus(filePathList=[trainFilePath, testFilePath])
 
+def getRawLabels():
+    global trainFilePath, testFilePath, corpus
+    _, y_train = corpus.loadFile(filePath=trainFilePath)
+    predictions = MyCorpus.oneHotDecode(y_train)
+    with open('raw.pkl', 'wb') as outputFile:
+        pickle.dump(predictions, outputFile, pickle.HIGHEST_PROTOCOL)
+    with open(dataSetName + 'Label2idx.pkl', 'wb') as outputFile:
+        pickle.dump(corpus.label2idx, outputFile, pickle.HIGHEST_PROTOCOL)
+
 def trainLSTM():
     global trainFilePath, testFilePath, corpus
 
@@ -80,6 +89,7 @@ def trainHNMOrigin():
     model.fit(X_train, y_train, epochs=10, batch_size=128, validation_split=0.1, shuffle=True, callbacks=[metricHistory])
 
 if __name__ == '__main__':
-    trainLSTM()
-    trainLSTMSingle()
-    trainHNM()
+    getRawLabels()
+    # trainLSTM()
+    # trainLSTMSingle()
+    # trainHNM()

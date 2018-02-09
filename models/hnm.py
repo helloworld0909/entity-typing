@@ -1,7 +1,4 @@
-import keras
-from keras.models import Sequential
 from keras.layers import *
-from keras.optimizers import *
 from keras.models import Model
 
 left_length = 130
@@ -9,6 +6,7 @@ entity_length = 6
 right_length = 130
 total_length = 260
 charEmbeddingDim = 30
+
 
 def hnm(corpus):
     global left_length, entity_length, right_length
@@ -44,14 +42,15 @@ def hnm(corpus):
         name='right_embedding'
     )(right_input)
 
-    left = Reshape((left_length*100, ), input_shape=(left_length, 100))(left_word)
+    left = Reshape((left_length * 100,), input_shape=(left_length, 100))(left_word)
 
     left_hidden = Dense(1000)(left)
     left_hidden = Dense(100)(left_hidden)
 
-    entity_rnn = SimpleRNN(100, return_sequences=False, recurrent_dropout=0.25, dropout=0.25, name='entity_rnn')(entity_word)
+    entity_rnn = SimpleRNN(100, return_sequences=False, recurrent_dropout=0.25, dropout=0.25, name='entity_rnn')(
+        entity_word)
 
-    right = Reshape((left_length*100, ), input_shape=(left_length, 100))(right_word)
+    right = Reshape((right_length * 100,), input_shape=(right_length, 100))(right_word)
     right_hidden = Dense(1000)(right)
     right_hidden = Dense(100)(right_hidden)
 
@@ -66,6 +65,7 @@ def hnm(corpus):
     model.summary()
 
     return model
+
 
 def hnm_origin(corpus):
     global left_length, entity_length, right_length
