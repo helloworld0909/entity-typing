@@ -7,6 +7,7 @@ from keras.models import Model
 left_length = 25
 entity_length = 12
 right_length = 70
+total_length = 100
 
 
 def lstmCN(corpus):
@@ -56,6 +57,36 @@ def lstmCN(corpus):
     output = Dense(corpus.labelDim, activation='sigmoid', name='output')(hidden_2)
 
     model = Model(inputs=[left_input, entity_input, right_input], outputs=output)
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    model.summary()
+
+    return model
+
+
+def lstmSingleCN(corpus):
+    global total_length
+
+    token_input = Input((total_length,), name='token_input')
+    tag_input = Input((total_length, 1), name='tag_input')
+
+    word_embedding = Embedding(
+        input_dim=corpus.vocabSize,
+        output_dim=100,
+        input_length=total_length,
+        weights=[corpus.wordEmbedding],
+        trainable=False,
+        name='word_embedding'
+    )(token_input)
+
+    merge_layer = concatenate([word_embedding, tag_input])
+
+    bilstm = Bidirectional(LSTM(100, return_sequences=False, recurrent_dropout=0.25, dropout=0.25, name='BiLSTM'))(merge_layer)
+
+    hidden = Dense(100, activation='relu', name='hidden_2')(bilstm)
+
+    output = Dense(corpus.labelDim, activation='sigmoid', name='output')(hidden)
+
+    model = Model(inputs=[token_input, tag_input], outputs=output)
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     model.summary()
 

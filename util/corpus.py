@@ -96,6 +96,8 @@ class MyCorpus(CorpusEN):
         return [X_left, X_entity, X_right], y
 
     def loadFileSingleSent(self, filePath):
+        from models.lstm import total_length
+
         X = []
         X_mentionTag = []
         y = []
@@ -123,8 +125,8 @@ class MyCorpus(CorpusEN):
         logging.debug(X_mentionTag[0])
         logging.debug(y[0])
 
-        X = pad_sequences(X, maxlen=260)
-        X_mentionTag = pad_sequences(X_mentionTag, maxlen=260)
+        X = pad_sequences(X, maxlen=total_length)
+        X_mentionTag = pad_sequences(X_mentionTag, maxlen=total_length)
         X_mentionTag = np.expand_dims(X_mentionTag, axis=-1)
         y = np.asarray(y)
 
@@ -260,6 +262,43 @@ class MyCorpusCN(CorpusCN):
 
         return [X_left, X_entity, X_right], y
 
+
+    def loadFileSingleSent(self, filePath):
+        from models.lstmCN import total_length
+
+        X = []
+        X_mentionTag = []
+        y = []
+
+        labelDim = len(self.label2idx)
+        with open(filePath, 'r', encoding='utf-8') as input_file:
+            for line in input_file:
+                body = json.loads(line)
+                sentence = body['tokens']
+                idxSentence = list(map(lambda token: self.token2idx.get(token, 1), sentence))
+
+                for mention in body['mentions']:
+                    start = mention['start']
+                    end = mention['end']
+                    mentionTag = np.zeros(len(idxSentence), dtype='float32')
+                    mentionTag[start:end] = 1
+                    idxLabels = list(map(lambda label: self.label2idx[label], mention['labels']))
+                    oneHotVector = self.oneHotEncode(idxLabels, labelDim)
+
+                    X.append(idxSentence)
+                    X_mentionTag.append(mentionTag)
+                    y.append(oneHotVector)
+
+        logging.debug(X[0])
+        logging.debug(X_mentionTag[0])
+        logging.debug(y[0])
+
+        X = pad_sequences(X, maxlen=total_length)
+        X_mentionTag = pad_sequences(X_mentionTag, maxlen=total_length)
+        X_mentionTag = np.expand_dims(X_mentionTag, axis=-1)
+        y = np.asarray(y)
+
+        return [X, X_mentionTag], y
 
     def loadFileAdditional(self, filePath):
         from models.lstmCN import left_length, entity_length, right_length
