@@ -5,7 +5,7 @@ from keras.models import load_model
 
 from eval.evaluation import evaluate
 from models.lstmCN import lstmCN
-from models.hnmCN import hnmCN
+from models.hnmCN import hnmCN, hnmOriginCN
 from util.corpus import MyCorpus, MyCorpusCN
 from util.callback import MetricHistory
 
@@ -24,6 +24,6 @@ corpus = MyCorpusCN(filePathList=[trainFilePath])
 X_train, y_train = corpus.loadFile(filePath=trainFilePath)
 X_test, y_test = corpus.loadFile(filePath=testFilePath)
 
-model = hnmCN(corpus)
+model = hnmOriginCN(corpus)
 metricHistory = MetricHistory(X_test, y_test)
 model.fit(X_train, y_train, epochs=20, batch_size=128, validation_split=0.1, shuffle=True, callbacks=[metricHistory])
